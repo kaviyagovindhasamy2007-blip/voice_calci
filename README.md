@@ -55,6 +55,10 @@ For example:
 | Multiplication | × |
 | Division | ÷ |
 
+## screenshot of the live website
+
+![Voice-Based Calculator Screenshot](img.png)
+
 ## 🧠 Logic
 
 The application uses the following basic logic:
