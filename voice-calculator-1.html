@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Voice-Based Calculator</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: white;
+        }
+
+        /* Top bar like MIT App Inventor Screen1 */
+        .topbar {
+            height: 80px;
+            background: #3f51b5;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 25px;
+        }
+
+        .screen-title {
+            font-size: 30px;
+        }
+
+        .menu {
+            font-size: 35px;
+        }
+
+        /* Main content */
+        .container {
+            text-align: center;
+            padding-top: 80px;
+        }
+
+        .label {
+            font-size: 25px;
+            margin-top: 35px;
+            margin-bottom: 15px;
+        }
+
+        .value {
+            font-size: 24px;
+            min-height: 35px;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        /* Speak button */
+        #speakButton {
+            background: #e0e0e0;
+            border: 1px solid #999;
+            border-radius: 3px;
+            padding: 14px 30px;
+            font-size: 20px;
+            cursor: pointer;
+        }
+
+        #speakButton:active {
+            background: #c5c5c5;
+        }
+
+        #status {
+            margin-top: 15px;
+            font-size: 16px;
+            color: #666;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Top bar -->
+    <div class="topbar">
+        <div class="screen-title">Screen1</div>
+        <div class="menu">⋮</div>
+    </div>
+
+    <!-- Main application -->
+    <div class="container">
+
+        <button id="speakButton" onclick="startListening()">
+            Speak
+        </button>
+
+        <div class="label">
+            You said:
+        </div>
+
+        <div class="value" id="question">
+            -
+        </div>
+
+        <div class="label">
+            Result:
+        </div>
+
+        <div class="value" id="result">
+            -
+        </div>
+
+        <div id="status"></div>
+
+    </div>
+
+
+    <script>
+
+        /* Start voice recognition */
+        function startListening() {
+
+            const SpeechRecognition =
+                window.SpeechRecognition ||
+                window.webkitSpeechRecognition;
+
+            if (!SpeechRecognition) {
+                alert("Speech recognition is not supported in this browser.");
+                return;
+            }
+
+            const recognition = new SpeechRecognition();
+
+            recognition.lang = "en-US";
+            recognition.continuous = false;
+            recognition.interimResults = false;
+
+            document.getElementById("status").innerText =
+                "Listening...";
+
+            recognition.start();
+
+            recognition.onresult = function(event) {
+
+                const text =
+                    event.results[0][0].transcript;
+
+                document.getElementById("question").innerText =
+                    text;
+
+                document.getElementById("status").innerText =
+                    "";
+
+                calculate(text);
+            };
+
+            recognition.onerror = function() {
+
+                document.getElementById("status").innerText =
+                    "Could not recognize speech.";
+            };
+        }
+
+
+        /* Calculate the spoken expression */
+        function calculate(text) {
+
+            let expression = text.toLowerCase().trim();
+
+            /* Convert spoken operators */
+            expression = expression.replace(/plus/g, "+");
+            expression = expression.replace(/minus/g, "-");
+            expression = expression.replace(/times/g, "*");
+            expression = expression.replace(/multiplied by/g, "*");
+            expression = expression.replace(/multiply/g, "*");
+            expression = expression.replace(/divided by/g, "/");
+            expression = expression.replace(/divide/g, "/");
+
+            /* Convert spoken numbers */
+            const numbers = {
+                "zero": "0",
+                "one": "1",
+                "two": "2",
+                "three": "3",
+                "four": "4",
+                "five": "5",
+                "six": "6",
+                "seven": "7",
+                "eight": "8",
+                "nine": "9",
+                "ten": "10"
+            };
+
+            for (let word in numbers) {
+
+                expression = expression.replace(
+                    new RegExp("\\b" + word + "\\b", "g"),
+                    numbers[word]
+                );
+            }
+
+            /* Remove unnecessary spaces */
+            expression = expression.replace(/\s+/g, "");
+
+            try {
+
+                /*
+                   Only allow numbers and
+                   arithmetic operators.
+                */
+                if (!/^[0-9+\-*/.]+$/.test(expression)) {
+
+                    document.getElementById("result").innerText =
+                        "Sorry, I didn't understand";
+
+                    return;
+                }
+
+                const answer = Function(
+                    "return " + expression
+                )();
+
+                document.getElementById("result").innerText =
+                    answer;
+
+                /* Speak the answer */
+                speakAnswer(answer);
+
+            } catch (error) {
+
+                document.getElementById("result").innerText =
+                    "Invalid calculation";
+            }
+        }
+
+
+        /* Text-to-speech */
+        function speakAnswer(answer) {
+
+            if ("speechSynthesis" in window) {
+
+                const speech =
+                    new SpeechSynthesisUtterance(
+                        "The answer is " + answer
+                    );
+
+                speech.lang = "en-US";
+
+                window.speechSynthesis.speak(speech);
+            }
+        }
+
+    </script>
+
+</body>
+</html>
