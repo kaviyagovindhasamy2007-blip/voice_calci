@@ -5,7 +5,7 @@ The application allows users to speak a basic arithmetic calculation and display
 
 ## 🌐 Live Website
 
-[Click here to open the Voice-Based Calculator]()
+[Click here to open the Voice-Based Calculator](https://kaviyagovindhasamy2007-blip.github.io/voice_calci/voice-calculator-1.html)
 
 ## 📱 Application
 
